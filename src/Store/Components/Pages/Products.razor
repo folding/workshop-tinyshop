@@ -2,25 +2,114 @@
 @using DataEntities
 @using Store.Services
 @inject IConfiguration Configuration
+@inject ProductService ProductService
 @rendermode InteractiveServer
 @attribute [StreamRendering(true)]
 
 <PageTitle>Products</PageTitle>
 
-<h1>Products</h1>
-
-<p>Here are some of our amazing outdoor products that you can purchase.</p>
+<header class="products-header">
+    <h1>Products</h1>
+    <p>Here are some of our amazing outdoor products that you can purchase.</p>
+</header>
 
 @if (products == null)
 {
-    <p><em>Loading...</em></p>
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
 }
 else
 {
-    <!--Implement Products table here-->
-    <p>Under construction...</p>
-
+    <ul class="product-list">
+        @foreach (var product in products)
+        {
+            <li class="product-item">
+                @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                {
+                    <img src="@GetImageUrl(product.ImageUrl)" alt="@product.Name" />
+                }
+                <div class="product-details">
+                    <h2>@product.Name</h2>
+                    <p class="product-description">@product.Description</p>
+                    <p class="product-price">@product.Price.ToString("C")</p>
+                </div>
+            </li>
+        }
+    </ul>
 }
+
+<style>
+    .products-header {
+        margin-bottom: 1.75rem;
+    }
+
+    .products-header h1 {
+        margin-bottom: 0.4rem;
+        color: #1f2937;
+        font-size: 2rem;
+    }
+
+    .products-header p {
+        margin: 0;
+        color: #5b6472;
+    }
+
+    .product-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.25rem;
+        list-style: none;
+        padding: 0;
+    }
+
+    .product-item {
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        background: #fff;
+        box-shadow: 0 2px 8px rgb(15 23 42 / 5%);
+        transition: box-shadow 150ms ease, transform 150ms ease;
+    }
+
+    .product-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgb(15 23 42 / 10%);
+    }
+
+    .product-item img {
+        display: block;
+        width: 100%;
+        height: 190px;
+        padding: 1rem;
+        object-fit: contain;
+        background: #f8fafc;
+    }
+
+    .product-details {
+        padding: 1rem 1.1rem 1.1rem;
+    }
+
+    .product-details h2 {
+        margin: 0 0 0.5rem;
+        color: #1f2937;
+        font-size: 1.1rem;
+    }
+
+    .product-description {
+        min-height: 3rem;
+        margin: 0 0 0.9rem;
+        color: #5b6472;
+        line-height: 1.5;
+    }
+
+    .product-price {
+        margin: 0;
+        color: #166534;
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+</style>
 
 @code {
     private List<Product>? products;
@@ -28,10 +117,17 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // Simulate asynchronous loading to demonstrate streaming rendering
-        await Task.Delay(500);
-        imagePrefix = Configuration["ImagePrefix"]!;
-        products = [];
+        imagePrefix = Configuration["ImagePrefix"] ?? string.Empty;
+        products = await ProductService.GetProducts();
     }
 
+    private string GetImageUrl(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return string.Empty;
+        }
+
+        return $"{imagePrefix.TrimEnd('/')}/{imageUrl.TrimStart('/')}";
+    }
 }

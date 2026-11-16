@@ -21,6 +21,7 @@ public class Product
 }
 
 
+[JsonSerializable(typeof(Product))]
 [JsonSerializable(typeof(List<Product>))]
 public sealed partial class ProductSerializerContext : JsonSerializerContext
 {
