@@ -21,9 +21,13 @@ start src\TinyShop.sln
 
 ## Build
 
+Install the .NET 10 or .NET 11 SDK, then run:
+
 ```powershell
 dotnet build src\TinyShop.sln
 ```
+
+The app targets .NET 10 and rolls forward to a newer major runtime if .NET 10 is not installed.
 
 ## License
 
